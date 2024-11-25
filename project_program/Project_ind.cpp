@@ -47,8 +47,10 @@ class Menu{
 	 
 	int totalIncome;
 public:
+	int make_coffee_count;
 	Menu(){
 		totalIncome = 0;
+		make_coffee_count = 1;
 	}
 	
 	void make_menu();
@@ -56,7 +58,14 @@ public:
 	void show_menu();
 	void modify_menu(); 
 	void sell_menu();
+	int Return_count();
+	void employee();
 };
+
+//직원 고용에 따른 커피의 개수를 반환하여 줍니다.
+int Menu::Return_count(){
+	return menu_name.size();
+}
 
 void Menu::make_menu(){
 	string name;
@@ -190,6 +199,35 @@ void Menu::sell_menu(){
 	}
 }
 
+//직원 고용 토대 제작중
+void Menu::employee(){
+	string yn;
+	cout << "직원 고용" << endl;
+
+	for(int i = 0; i < 3; i++){
+		cout << "직원이름 : " << endl;
+		cout << "고용비용 : " << endl;
+		cout << "메뉴 추가 개수 : " << endl;
+
+		cout << "해당 직원을 고용하시겠습니까?(Y/N) : ";
+		cin >> yn;
+
+		if(yn == "Y" || yn == "y" || yn == "Yes" || yn == "yes"){
+			cout << "해당직원을 고용하였습니다." << endl;
+			break;
+		}
+		else if(yn == "N" || yn == "n" || yn == "No" || yn == "no"){
+			cout << "다음 직원을 소개합니다." << endl;
+			cout << endl;
+		}
+		else{
+			cout << "다시 한번 입력해주세요." << endl;
+		}
+	} 
+
+	
+}
+
 // 행동 요소와 관련된 클래스 입니다. 
 class Run{
 	int day = 1;
@@ -232,8 +270,14 @@ void Run::run(){
 				
 				switch(menu_select){
 					case 1:
-						// 참조한 Menu클래스의 함수 make_menu함수를 불러옵니다. 
-						menu.make_menu(); 
+						// 직원 고용에 따라 만들 수 있는 커피 개수를 제한합니다.
+						if(menu.make_coffee_count > menu.Return_count()){
+							// 참조한 Menu클래스의 함수 make_menu함수를 불러옵니다. 
+							menu.make_menu();
+						}
+						else{
+							cout << "만들 수 있는 커피의 개수를 넘었습니다." << endl;
+						}
 						break;
 					case 2:
 						// 참조한 Menu클래스의 함수 make_dessert함수를 불러옵니다. 
@@ -263,7 +307,7 @@ void Run::run(){
 			while(menu_select < 6){
 				cout << "===================행동(밤)=====================" << endl; 
 				cout << "1. 메뉴 가격 수정" << endl; 
-				cout << "2. 디저트 만들기" << endl;
+				cout << "2. 직원 고용" << endl;
 				cout << "3. 카페 메뉴 확인" << endl;
 				cout << "4. 정산" << endl;
 				cout << "5. 미니 게임" << endl; 
@@ -276,7 +320,7 @@ void Run::run(){
 						menu.modify_menu(); 
 						break;
 					case 2:
-						menu.make_dessert(); 
+						menu.employee();
 						break;
 					case 3:
 						menu.show_menu();
