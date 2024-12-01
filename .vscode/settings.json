@@ -4,6 +4,9 @@
         "vector": "cpp",
         "chrono": "cpp",
         "system_error": "cpp",
-        "xlocale": "cpp"
+        "xlocale": "cpp",
+        "ratio": "cpp",
+        "ostream": "cpp",
+        "iostream": "cpp"
     }
 }

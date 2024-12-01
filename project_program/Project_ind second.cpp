@@ -10,11 +10,16 @@
 using namespace std;
 
 const int MAX_MENU = 10;
+static int make_coffee_count = 1;
+int staff_count = 0;
 
 class Employee{
-public:
-	// 나중에 수정 예정
+private:
+// 나중에 수정 예정
 	string rand_name[10];
+	string employee_name;
+public:
+	
 	Employee(){
 		rand_name[0] = "김수현";
 		rand_name[1] = "이정환";
@@ -27,9 +32,10 @@ public:
 		rand_name[8] = "함시우";
 		rand_name[9] = "지현아";
 	}
-	vector<string> employee_name;
-	vector<int> employee_price;
-	bool check_employee = true;
+	
+	int employee_price = 0;
+
+	friend void Hire(Employee& hire);
 };
 
 class Anim{
@@ -68,15 +74,14 @@ class Menu{
 	string dessert_name;
 	int dessert_price;
 	int dessert_sell; 
+	int dessert_total_sell;
 	
 	bool check_dessert_make = false;
-	int total_income;
+	int total_sell;
 
 public:
-	int make_coffee_count;
 	Menu(){
-		total_income = 0;
-		make_coffee_count = 1;
+		total_sell = 0;
 	}
 	Employee employ;
 	
@@ -86,9 +91,9 @@ public:
 	void ModifyMenu(); 
 	void SellMenu();
 	int ReturnCount();
-	void Hire();
 	//수요 공급 곡선을 선택하는 함수입니다.
 	void SupplyDemand(int i);
+	void Total(int total_staff);
 };
 
 //직원 고용에 따른 커피의 개수를 반환하여 줍니다.
@@ -244,9 +249,11 @@ void Menu::SellMenu(){
 
 	// 메뉴를 전부 돌면서 정해진 
 	for(int i = 0; i < menu_price.size(); i++){
-
 		SupplyDemand(i);
 	}
+	
+	// 커피의 모든 판매량의 절반만큼 판매되어 저장합니다.
+	dessert_total_sell += 5000 * dessert_sell;
 }
 
 void Menu::SupplyDemand(int i){
@@ -277,12 +284,35 @@ void Menu::SupplyDemand(int i){
 	// 디저트의 판매량은 커피의 절반만큼 팔립니다.
 	dessert_sell += menu_sell[i] / 2;
 
-	// 판매된 최종개수를 입력합니다. (정산에서 이용됩니다.)
-	total_income = menu_price[i] * menu_sell[i];
+	// 판매된 총 가격을 입력합니다. (정산에서 이용됩니다.)
+	total_sell += menu_price[i] * menu_sell[i];
+}
+
+//정산하여 총 가격을 보여줍니다.
+void Menu::Total(int total_staff){
+	cout << "===================| 정산 |======================" << endl;
+	// 커피의 총 판매량을 모두 계산하여 보여줍니다.
+	cout << "===| 커피 |===" << endl;
+	cout << total_sell << endl;
+	cout << "\n";
+
+	// 디저트의 총 판매량을 모두 계산하여 보여줍니다.
+	cout << "===| 디저트 |===" << endl;
+	cout << dessert_total_sell << endl;
+	cout << "\n";
+
+	// 직원 월급의 총 판매량을 모두 계산하여 보여줍니다.
+	cout << "===| 직원 월급 |===" << endl;
+	cout << total_staff << endl;
+	cout << "\n";
+
+	// 커피 + 디저트 - 직원월급을 하여 보여줍니다.
+	cout << "===| 정산 |===" << endl;
+	cout << total_sell + dessert_total_sell - total_staff << endl;
 }
 
 //직원 고용 토대 제작 완료
-void Menu::Hire(){
+void Hire(Employee& hire){
 	srand((unsigned)time(NULL));
 
 	string yn;
@@ -301,7 +331,7 @@ void Menu::Hire(){
 		int k = rand()%9;
 
 		// 저장된 직원의 이름을 랜덤으로 보여줍니다.
-		cout << "직원이름 : "  << employ.rand_name[k] << endl;
+		cout << "직원이름 : "  << hire.rand_name[k] << endl;
 
 		// 랜덤으로 고용비용을 소개하여 줍니다.
 		cout << "고용비용 : " << employee_money << "원" << endl;
@@ -327,12 +357,13 @@ void Menu::Hire(){
 			}
 			
 			// Employee class에 고용한 이름과 고용 비용 vector에 입력
-			employ.employee_name.push_back(employ.rand_name[k]);
-			employ.employee_price.push_back(employee_money);
+			hire.employee_name = hire.rand_name[k];
+			hire.employee_price = employee_money;
+			staff_count++;
 
 			// 현재 가용 메뉴 개수를 출력하여 보여줍니다.
 			cout << "현재 가용 가능한 메뉴의 개수는 " << make_coffee_count << "개 입니다." << endl;
-
+			cout << "현재 고용한 직원 수는 " << "(" << staff_count << "/3)" << "명 입니다." << endl;
 			break;
 		}
 		else if(yn == "N" || yn == "n" || yn == "No" || yn == "no"){
@@ -343,9 +374,6 @@ void Menu::Hire(){
 			cout << "다시 한번 입력해주세요." << endl;
 		}
 	} 
-
-	// 직원 고용을 진행하면 고용 여부와 상관없이 그날 고용은 끝이 납니다.
-	employ.check_employee = false;
 }
 
 // 행동 요소와 관련된 클래스 입니다. 
@@ -355,10 +383,13 @@ public:
 	// 메뉴, 애니메이션(보류), 직원 클래스를 참조합니다. 
 	Menu menu;
 	Anim anim;
-	Employee employee;
+	Employee employee[3];
+
+	bool check_employee = true;
+	int total_staff = 0;
+
 	void run();
 };
-
 
 // 전체적인 행동 요소를 나타내는 함수 입니다. 
 void Run::run(){
@@ -392,7 +423,7 @@ void Run::run(){
 				switch(menu_select){
 					case 1:
 						// 직원 고용에 따라 만들 수 있는 커피 개수를 제한합니다.
-						if(menu.make_coffee_count > menu.ReturnCount()){
+						if(make_coffee_count > menu.ReturnCount()){
 							// 참조한 Menu클래스의 함수 make_menu함수를 불러옵니다. 
 							menu.MakeMenu();
 						}
@@ -426,7 +457,12 @@ void Run::run(){
 		else{
 			//밤에 진행할 활동을 선택합니다.
 			//밤이 왔다면 다시 고용할 수 있도록 함수를 조정합니다. 
-			employee.check_employee = true;
+			check_employee = true;
+
+			// 밤이 오면 직원들의 일급을 하루마다 더해줍니다.
+			for(int i = 0; i < staff_count; i++){
+				total_staff += employee[i].employee_price;
+			}
 
 			while(menu_select < 6){
 				cout << "===================행동(밤)=====================" << endl; 
@@ -444,17 +480,20 @@ void Run::run(){
 						menu.ModifyMenu(); 
 						break;
 					case 2:
-					// 직원 고용이 한번 이루어 졌다면 그날은 접근하지 못하도록 합니다.
-				 		if(employee.check_employee){
-							menu.Hire();
+						// 직원 고용이 한번 이루어 졌다면 그날은 접근하지 못하도록 합니다.
+						// 직원 수가 3명이 넘어가면 더이상 고용이 불가능합니다.
+				 		if(check_employee && staff_count < 3){
+							Hire(employee[staff_count]);
 						}
-						
+						// 직원 고용을 진행하면 고용 여부와 상관없이 그날 고용은 끝이 납니다.
+						check_employee = false;
+
 						break;
 					case 3:
 						menu.ShowMenu();
 						break;
 					case 4:
-						
+						menu.Total(total_staff);
 						break;
 					case 5:
 						
