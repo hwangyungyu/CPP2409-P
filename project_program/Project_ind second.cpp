@@ -3,15 +3,67 @@
 #include <string>
 #include <algorithm>
 #include <ctime>
+#include <map>
+#include <fstream>
 #include <cstdlib>
 
 #include <chrono>
 #include <thread>
 using namespace std;
 
+// 만들 수 있는 커피는 10개로 한정되어 있습니다.
 const int MAX_MENU = 10;
+// 제작할 수 있는 커피의 개수입니다.
 static int make_coffee_count = 1;
+// 가용가능한 직원의 수를 저장합니다.
 int staff_count = 0;
+
+class Event {
+public:
+    // 신문 파일과 키워드 저장
+    map<string, string> newspaperKeywords = {
+        {"newspaper1.txt", "nobel"},
+        {"newspaper2.txt", "newjeans"},
+        {"newspaper3.txt", "ott"},
+        {"newspaper4.txt", "chuncheon"},
+        {"newspaper5.txt", "electric"},
+        {"newspaper6.txt", "apple"},
+        {"newspaper7.txt", "ai"},
+        {"newspaper8.txt", "martial law"},
+        {"newspaper9.txt", "bitcoin"},
+        {"newspaper10.txt", "subway"}
+    };
+
+    void ShowNewspaper(int index);
+};
+
+// 신문을 보여주는 함수입니다.
+void Event::ShowNewspaper(int index) {
+    // map에서 index에 해당하는 키 찾기
+    auto it = newspaperKeywords.begin();
+    advance(it, index);
+
+    string news = it->first;  // 선택된 파일 이름
+    string keyword = it->second;  // 해당 키워드
+
+	// 선택되어지는 신문을 확인합니다.
+    cout << "선택된 신문 파일: " << news << endl;
+    cout << "핵심 키워드: " << keyword << endl;
+
+    // 파일 읽기
+    ifstream is{news};
+    if (!is) {
+        cerr << "파일 오픈에 실패하였습니다: " << news << endl;
+        return;
+    }
+
+    cout << "==================| 신문 내용 |====================" << endl;
+    char c;
+    while (is.get(c)) {
+        cout << c;
+    }
+    cout << endl;
+}
 
 class Employee{
 private:
@@ -26,7 +78,7 @@ public:
 		rand_name[2] = "박지현";
 		rand_name[3] = "황서연";
 		rand_name[4] = "김칠우";
-		rand_name[5] = "홍길동";
+		rand_name[5] = "엄준성";
 		rand_name[6] = "김재현";
 		rand_name[7] = "박건우";
 		rand_name[8] = "함시우";
@@ -67,16 +119,20 @@ class Menu{
 	vector<string> menu_name;
 	vector<int> menu_price;
 	vector<int> menu_sell;
+	// 수요 공급 곡선을 어떤걸 사용할 지 저장해 놓습니다.
 	vector<int> supply_demand_num;
 	
 	bool check_menu_make = false;
 	
+	// 디저트에 관련된 내용을 저장합니다.
 	string dessert_name;
 	int dessert_price;
 	int dessert_sell; 
 	int dessert_total_sell;
 	
+	// 메뉴 확인시에 디저트가 만들어지지 않았다면 보여주지 않습니다.
 	bool check_dessert_make = false;
+	// 정산시에 사용되는 디저트와 커피 판매액을 모두 저장해 놓습니다.
 	int total_sell;
 
 public:
@@ -145,16 +201,14 @@ void Menu::MakeMenu(){
 }
 
 void Menu::MakeDessert(){
-	string name;
 	int price;
 	
 	// 제작할 메뉴를 입력받습니다. 
 	cout << "디저트를 입력해주세요 : " << endl;
-	cin >> name;
+	getline(cin, dessert_name);
 
 	cout << "디저트 가격은 5000원입니다. " << endl;
 	
-	dessert_name = name;
 	dessert_price = 5000; 
 	
 	// 디저트 확인 시에 디저트의 여부를 판별  
@@ -182,7 +236,7 @@ void Menu::ShowMenu(){
 	else{
 		cout << "아직 만들어진 메뉴가 없습니다." << endl; 
 	}
-	
+
 	// 디저트 제작여부에 따라서 메뉴를 보여줍니다.
 	if(check_dessert_make){
 		cout << "==============(dessert)================" << endl;
@@ -384,6 +438,7 @@ public:
 	Menu menu;
 	Anim anim;
 	Employee employee[3];
+	Event event;
 
 	bool check_employee = true;
 	int total_staff = 0;
@@ -393,6 +448,9 @@ public:
 
 // 전체적인 행동 요소를 나타내는 함수 입니다. 
 void Run::run(){
+	srand(static_cast<unsigned int>(time(nullptr)));
+    int r = rand() % 10; // 인덱스는 0~9 범위
+
 	int menu_select;
 	
 	int time = 0;
@@ -415,8 +473,9 @@ void Run::run(){
 				cout << "1. 카페 메뉴 만들기" << endl; 
 				cout << "2. 디저트 만들기" << endl;
 				cout << "3. 카페 메뉴 확인" << endl;
-				cout << "4. 미니 게임" << endl;
-				cout << "5. 판매 시작" << endl;
+				cout << "4. 신문 확인" << endl;
+				cout << "5. 미니 게임" << endl;
+				cout << "6. 판매 시작" << endl;
 				cout << ">> ";
 				cin >> menu_select;
 				
@@ -441,8 +500,12 @@ void Run::run(){
 						break;
 					case 4:
 						
+						event.ShowNewspaper(r);
 						break;
 					case 5:
+						
+						break;
+					case 6:
 						// 시간을 밤으로 만듭니다. 
 						//anim.anim_text("판매중");
 						menu.SellMenu();
