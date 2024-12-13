@@ -35,7 +35,63 @@ public:
     };
 
     void ShowNewspaper(int index);
+	void MiniGame(int index);
 };
+
+void Event::MiniGame(int index) {
+    // map에서 index에 해당하는 키 찾기
+    auto it = newspaperKeywords.begin();
+    advance(it, index);
+
+    string keyword = it->second;  // 해당 키워드
+    string guessed(keyword.size(), '_');
+    int attempts_left = 10;
+    string guessed_letters = "";
+
+    while (attempts_left > 0 && guessed != keyword) {
+        // 현재 상태 출력
+        cout << "\n단어: ";
+        for (char c : guessed) {
+            cout << c << ' ';
+        }
+        cout << "\n남은 시도 횟수: " << attempts_left << "\n";
+        cout << "추측한 글자: " << guessed_letters << "\n";
+        cout << "알파벳 한 글자를 입력하세요: ";
+
+        char guess;
+        cin >> guess;
+        guess = tolower(guess);
+
+        if (!isalpha(guess) || guessed_letters.find(guess) != std::string::npos) {
+            cout << "잘못된 입력입니다. 한 글자 알파벳만 입력하거나, 이미 추측한 글자를 제외해주세요.\n";
+            continue;
+        }
+
+        guessed_letters += guess;
+
+        bool found = false;
+        for (size_t i = 0; i < keyword.size(); ++i) {
+            if (keyword[i] == guess) {
+                guessed[i] = guess;
+                found = true;
+            }
+        }
+
+        if (found) {
+            cout << "좋아요! '" << guess << "'는 단어에 포함되어 있습니다.\n";
+        } else {
+            cout << "안타깝습니다. '" << guess << "'는 단어에 없습니다.\n";
+        }
+
+		attempts_left--;
+    }
+
+    if (guessed == keyword) {
+        std::cout << "\n축하합니다! 단어를 맞추셨습니다: " << keyword << "\n";
+    } else {
+        std::cout << "\n게임 오버! 단어는 다음과 같았습니다: " << keyword << "\n";
+    }
+}
 
 // 신문을 보여주는 함수입니다.
 void Event::ShowNewspaper(int index) {
@@ -147,6 +203,7 @@ public:
 	void ModifyMenu(); 
 	void SellMenu();
 	int ReturnCount();
+	bool ReturnMenuCheck();
 	//수요 공급 곡선을 선택하는 함수입니다.
 	void SupplyDemand(int i);
 	void Total(int total_staff);
@@ -155,6 +212,10 @@ public:
 //직원 고용에 따른 커피의 개수를 반환하여 줍니다.
 int Menu::ReturnCount(){
 	return menu_name.size();
+}
+
+bool Menu::ReturnMenuCheck(){
+	return check_menu_make;
 }
 
 void Menu::MakeMenu(){
@@ -169,7 +230,8 @@ void Menu::MakeMenu(){
 		menu_check = false;
 		
 		cout << "메뉴명을 입력해주세요 : " << endl;
-		cin >> name;
+		cin.ignore(); // 이전 입력이 있다면 버퍼를 비웁니다.
+    	getline(cin, name);
 
 		cout << "메뉴 가격을 입력해주세요 : " << endl;
 		cin >> price;	
@@ -202,10 +264,13 @@ void Menu::MakeMenu(){
 
 void Menu::MakeDessert(){
 	int price;
+	string name;
 	
 	// 제작할 메뉴를 입력받습니다. 
 	cout << "디저트를 입력해주세요 : " << endl;
-	getline(cin, dessert_name);
+	cin.ignore(); // 이전 입력이 있다면 버퍼를 비웁니다.
+    getline(cin, name);
+	dessert_name = name;
 
 	cout << "디저트 가격은 5000원입니다. " << endl;
 	
@@ -499,17 +564,22 @@ void Run::run(){
 						menu.ShowMenu();
 						break;
 					case 4:
-						
+						// 신문을 보여줍니다.
 						event.ShowNewspaper(r);
 						break;
 					case 5:
-						
+						event.MiniGame(r);
 						break;
 					case 6:
 						// 시간을 밤으로 만듭니다. 
 						//anim.anim_text("판매중");
-						menu.SellMenu();
-						time = 1; 
+						if(menu.ReturnMenuCheck()){
+							menu.SellMenu();
+							time = 1;
+						}
+						else{
+							cout << "아직 메뉴가 하나도 없습니다." << endl;
+						}
 						break;
 					default:
 						cout << "잘못된 입력입니다." << endl;
@@ -559,7 +629,7 @@ void Run::run(){
 						menu.Total(total_staff);
 						break;
 					case 5:
-						
+						event.MiniGame(r);
 						break;
 					case 6:
 						// 시간을 낮으로 만듭니다. 
