@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <ctime>
+#include <sstream>
 #include <map>
 #include <fstream>
 #include <cstdlib>
@@ -13,14 +14,17 @@ using namespace std;
 
 // 만들 수 있는 커피는 10개로 한정되어 있습니다.
 const int MAX_MENU = 10;
+
 // 제작할 수 있는 커피의 개수입니다.
 static int make_coffee_count = 1;
+
 // 가용가능한 직원의 수를 저장합니다.
 int staff_count = 0;
 
+// 각종 이벤트와 관련된 클래스 입니다.
 class Event {
 public:
-    // 신문 파일과 키워드 저장
+    // 신문 파일과 키워드 저장합니다.
     map<string, string> newspaperKeywords = {
         {"newspaper1.txt", "nobel"},
         {"newspaper2.txt", "newjeans"},
@@ -34,10 +38,17 @@ public:
         {"newspaper10.txt", "subway"}
     };
 
+	// 신문을 보여주는데 사용되어집니다. index의 경우에는 하루에 랜덤으로 선택되어집니다.
     void ShowNewspaper(int index);
+
+	// 미니게임을 실행합니다.
 	void MiniGame(int index);
+
+	// 그날의 keyword를 반환합니다.
+	string ReturnKeyword(int index);
 };
 
+// 미니게임을 실행합니다.
 void Event::MiniGame(int index) {
     // map에서 index에 해당하는 키 찾기
     auto it = newspaperKeywords.begin();
@@ -45,9 +56,14 @@ void Event::MiniGame(int index) {
 
     string keyword = it->second;  // 해당 키워드
     string guessed(keyword.size(), '_');
+
+	// 사용할 수 있는 횟수이며 10번으로 제한합니다.
     int attempts_left = 10;
+
+	// 추측한 단어를 저장합니다.
     string guessed_letters = "";
 
+	// 맞추거나 횟수를 모두 소진할 때까지 반복하여 실행합니다.
     while (attempts_left > 0 && guessed != keyword) {
         // 현재 상태 출력
         cout << "\n단어: ";
@@ -58,17 +74,21 @@ void Event::MiniGame(int index) {
         cout << "추측한 글자: " << guessed_letters << "\n";
         cout << "알파벳 한 글자를 입력하세요: ";
 
+		// 추측할 단어를 입력받습니다.
         char guess;
         cin >> guess;
         guess = tolower(guess);
 
+		// 잘못된 입력이거나 이미 추측한 단어일 경우에 다시 진행합니다.
         if (!isalpha(guess) || guessed_letters.find(guess) != std::string::npos) {
             cout << "잘못된 입력입니다. 한 글자 알파벳만 입력하거나, 이미 추측한 글자를 제외해주세요.\n";
             continue;
         }
 
+		// 추측한 단어는 담아줍니다.
         guessed_letters += guess;
 
+		// 추측한 알파벳이 포함되어져 있는 곳을 찾습니다.
         bool found = false;
         for (size_t i = 0; i < keyword.size(); ++i) {
             if (keyword[i] == guess) {
@@ -76,20 +96,23 @@ void Event::MiniGame(int index) {
                 found = true;
             }
         }
-
+		
+		// 포함 여부를 보여줍니다.
         if (found) {
             cout << "좋아요! '" << guess << "'는 단어에 포함되어 있습니다.\n";
         } else {
             cout << "안타깝습니다. '" << guess << "'는 단어에 없습니다.\n";
         }
-
+		
+		// 횟수를 소진합니다.
 		attempts_left--;
     }
 
+	// 성공 여부를 보여줍니다.
     if (guessed == keyword) {
-        std::cout << "\n축하합니다! 단어를 맞추셨습니다: " << keyword << "\n";
+        cout << "\n축하합니다! 단어를 맞추셨습니다: " << keyword << "\n";
     } else {
-        std::cout << "\n게임 오버! 단어는 다음과 같았습니다: " << keyword << "\n";
+        cout << "\n게임 오버! 다시 도전해주세요!!: " << "\n";
     }
 }
 
@@ -103,8 +126,8 @@ void Event::ShowNewspaper(int index) {
     string keyword = it->second;  // 해당 키워드
 
 	// 선택되어지는 신문을 확인합니다.
-    cout << "선택된 신문 파일: " << news << endl;
-    cout << "핵심 키워드: " << keyword << endl;
+    //cout << "선택된 신문 파일: " << news << endl;
+    //cout << "핵심 키워드: " << keyword << endl;
 
     // 파일 읽기
     ifstream is{news};
@@ -121,13 +144,25 @@ void Event::ShowNewspaper(int index) {
     cout << endl;
 }
 
+// 그 날의 키워드를 반환하여 줍니다.
+string Event::ReturnKeyword(int index){
+	// map에서 index에 해당하는 키 찾기
+    auto it = newspaperKeywords.begin();
+    advance(it, index);
+
+    string keyword = it->second;  // 해당 키워드
+
+	return keyword;
+}
+
+// 직원 고용과 관련된 클래스입니다.
 class Employee{
 private:
-// 나중에 수정 예정
+	// 랜덤으로 보내줄 이름을 저장하여 놓습니다.
 	string rand_name[10];
 	string employee_name;
 public:
-	
+	// 직원의 이름을 설정 해놓습니다.
 	Employee(){
 		rand_name[0] = "김수현";
 		rand_name[1] = "이정환";
@@ -141,11 +176,14 @@ public:
 		rand_name[9] = "지현아";
 	}
 	
+	// 직원의 고용비용입니다.
 	int employee_price = 0;
 
+	// 고용에 사용되어지는 함수입니다.
 	friend void Hire(Employee& hire);
 };
 
+// 애니메이션은 아직 보류중입니다.
 class Anim{
 public:
 	void clearScreen();
@@ -178,6 +216,7 @@ class Menu{
 	// 수요 공급 곡선을 어떤걸 사용할 지 저장해 놓습니다.
 	vector<int> supply_demand_num;
 	
+	// 메뉴가 만들어졌는지를 체크합니다.
 	bool check_menu_make = false;
 	
 	// 디저트에 관련된 내용을 저장합니다.
@@ -188,25 +227,54 @@ class Menu{
 	
 	// 메뉴 확인시에 디저트가 만들어지지 않았다면 보여주지 않습니다.
 	bool check_dessert_make = false;
+
 	// 정산시에 사용되는 디저트와 커피 판매액을 모두 저장해 놓습니다.
 	int total_sell;
 
+	// 베블런 효과에서 사용되는 변수압니다.
+	string veblen;
 public:
 	Menu(){
 		total_sell = 0;
+		dessert_total_sell = 0;
+		veblen = "veblen";
 	}
 	Employee employ;
 	
+	// 메뉴를 만드는데 관여합니다.
 	void MakeMenu();
-	void MakeDessert();
+
+	// 디저트를 만드는데 관여하고 key값을 받아 만일 그날 key단어가 포함되어있는지 체크합니다.
+	void MakeDessert(string key);
+
+	// 메뉴를 보여줍니다. 여기서 check_dessert_make, check_menu_make를 이용하여 
+	// 메뉴가 만들어졌는지 체크합니다.
 	void ShowMenu();
+
+	// 메뉴를 수정합니다.
 	void ModifyMenu(); 
+
+	// 날짜를 보낼때 사용되며 총 판매량을 저장합니다.
 	void SellMenu();
+
+	// 총 만들어져 있는 메뉴의 개수를 반환합니다.
 	int ReturnCount();
+
+	// 메뉴가 만들어졌는지 여부를 반환합니다.
 	bool ReturnMenuCheck();
+
 	//수요 공급 곡선을 선택하는 함수입니다.
-	void SupplyDemand(int i);
+	void SupplyDemand(int i, bool& check);
+
+	// 정산에 사용됩니다.
 	void Total(int total_staff);
+
+	// 디저트에 사용되며 그날의 key단어가 포함되어져 있는지 여부를 파악합니다.
+	bool containsWord(const string& targetWord, const string& Word);
+
+	// 날짜가 지나가면 디저트의 가격을 다시 5000원으로 조정합니다.
+	void ResetDessertPrice();
+
 };
 
 //직원 고용에 따른 커피의 개수를 반환하여 줍니다.
@@ -214,11 +282,14 @@ int Menu::ReturnCount(){
 	return menu_name.size();
 }
 
+// 메뉴가 하나라도 만들어졌는지의 여부를 반환합니다.
 bool Menu::ReturnMenuCheck(){
 	return check_menu_make;
 }
 
+// 메뉴를 만듭니다.
 void Menu::MakeMenu(){
+	// 이름과 가격을 입력받을 변수입니다.
 	string name;
 	int price;
 	
@@ -228,14 +299,23 @@ void Menu::MakeMenu(){
 	// 제작할 메뉴를 입력받습니다. 
 	while(menu_check){
 		menu_check = false;
-		
+
+		cout << "=======================| 주의 사항 |==========================" << endl;
+		cout << "메뉴의의 이름은 영어로 작성하여 주시길 바랍니다." << endl;
+		cout << "왜 한글이 안되는 것일까요...." << endl;
+		cout << "=============================================================" << endl;
+		cout << endl;
+
 		cout << "메뉴명을 입력해주세요 : " << endl;
 		cin.ignore(); // 이전 입력이 있다면 버퍼를 비웁니다.
+		// 메뉴의 이름을 입력받습니다.
     	getline(cin, name);
 
+		//메뉴의 가격을 입력받습니다.
 		cout << "메뉴 가격을 입력해주세요 : " << endl;
 		cin >> price;	
-	
+
+		// 지금까지 만들어진 메뉴의 크기만큼 for문을 돕니다.
 		for(int i = 0; i < menu_name.size(); i++){
 			// 이미 존재하는 메뉴라면 menu_check를 true로 두어 다시 실행합니다. 
 			if(menu_name[i] == name){
@@ -243,7 +323,8 @@ void Menu::MakeMenu(){
 				menu_check = true;
 			}
 		}		
-	
+
+		// 메뉴의 중복여부를 판단합니다.
 		if(!menu_check){
 			// 랜덤으로 수요공급곡선 번호를 지정하여 줍니다.
 			int num = rand()%3 + 1;
@@ -257,14 +338,22 @@ void Menu::MakeMenu(){
 			// 판매 시작 전에는 판매량이 없다는 것을 알리기위해 -1로 지정합니다.
 			menu_sell.push_back(-1);
 			
+			// 메뉴가 만들어졌음을 나타냅니다.
 			check_menu_make= true;
 		}
 	}
 }
 
-void Menu::MakeDessert(){
+// 디저트를 만듭니다.
+void Menu::MakeDessert(string key){
 	int price;
 	string name;
+
+	cout << "=======================| 주의 사항 |==========================" << endl;
+	cout << "디저트의 이름은 영어로 작성하여 주시길 바랍니다." << endl;
+	cout << "왜 한글이 안되는 것일까요...." << endl;
+	cout << "=============================================================" << endl;
+	cout << endl;
 	
 	// 제작할 메뉴를 입력받습니다. 
 	cout << "디저트를 입력해주세요 : " << endl;
@@ -272,25 +361,40 @@ void Menu::MakeDessert(){
     getline(cin, name);
 	dessert_name = name;
 
-	cout << "디저트 가격은 5000원입니다. " << endl;
+	cout << "기본 디저트 가격은 5000원입니다. " << endl;
 	
-	dessert_price = 5000; 
+	// 그날의 키워드가 포함되어져 있는 지 체크합니다.
+	if(containsWord(key, dessert_name)){
+		cout << "디저트가 더 비싼 가격에 팔립니다!!" << endl;
+		dessert_price = 7000;
+	}
+	else{
+		dessert_price = 5000; 
+	}
 	
 	// 디저트 확인 시에 디저트의 여부를 판별  
 	check_dessert_make = true;
 }
 
+// 디저트의 가격을 5000원으로 초기화할때 사용되어집니다.
+void Menu::ResetDessertPrice(){
+	dessert_price = 5000; 
+}
+
+// 메뉴를 보여줍니다.
 void Menu::ShowMenu(){
 	// 메뉴가 만들어졌는지 체크하여 그 여부에 따라 메뉴를 보여줍니다.
 	if(check_menu_make){
 		cout << "==============(coffee)================" << endl;
 		
+		// 메뉴의 크기만큼 for문을 작동시킵니다.
 		for(int i = 0; i < menu_name.size(); i++){
 			cout << (i+1) << "번 메뉴" << endl;	
 			cout << menu_name[i] << endl;
 			cout << menu_price[i] << endl;
 
-			//만약 아직 판매가 되지 않았다면 판매량이 -1이니 출력하지 않습니다. 
+			//만약 아직 판매가 진행되어진 메뉴는 판매량을 보여줍니다.
+			// 판매가 진행되지 않은 메뉴는 판매량이 -1임으로 이를 통해 판단합니다.
 			if(menu_sell[i] != -1){
 				cout << "판매량" << endl; 
 				cout << menu_sell[i] << endl;
@@ -309,6 +413,7 @@ void Menu::ShowMenu(){
 		cout << dessert_name << endl;
 		cout << dessert_price << endl;
 
+		// 디저트도 판매 여부를 판단하여 판매가 되었다면 판매량을 보여줍니다.
 		if(dessert_sell != 0){
 			cout << "판매량" << endl; 
 			cout << dessert_sell << endl;
@@ -321,14 +426,17 @@ void Menu::ShowMenu(){
 
 }
 
+// 메뉴를 수정합니다.
 void Menu::ModifyMenu(){
 	string name;
+	string yn;
 	int price;
 	int modify = -1; 
 	bool menu_check = true;
 	
+	// 수정이 완료될 때까지 while문을 진행합니다.
 	while(menu_check){
-		// 제작할 메뉴를 입력받습니다.
+		// 수정할 메뉴를 입력받습니다.
 		cout << "수정할 메뉴명를 입력해주세요 : " << endl;
 		cin >> name;
 		
@@ -344,12 +452,21 @@ void Menu::ModifyMenu(){
 		if(!menu_check){
 			cout << "수정할 가격을 입력해주세요 : " << endl;
 			cin >> price;
+			// 수정할 가격을 입력받아 수정해줍니다.
 			menu_name[modify] = name;
 			menu_price[modify] = price;
 		}
 		else{
 			cout << "메뉴 이름을 다시 한번 확인해주세요." << endl;
 		}	
+
+		// 수정의 진행여부를 입력받습니다.
+		cout << " 수정을 다시 진행하시겠습니까? (y/n): ";
+		cin >> yn;
+		// 수정을 원치 않을 시에 빠져 나갑니다.
+		if(yn == "n" || yn == "N"){
+			break;
+		}
 	}
 	
 }
@@ -362,46 +479,76 @@ void Menu::ModifyMenu(){
 // 둘의 지점이 일치하는 곳이 가장 총 판매량이 가장 많은 지점입니다.
 // 핵심 기능으로써 여러가지 공급 곡선을 추가할 예정입니다.
 void Menu::SellMenu(){
+	bool check_veblen = true;
+
 	// 디저트의 판매량은 커피의 절반만큼 팔립니다.
 	// 다만 커피의 판매량은 가격에 따라 바뀔 수 있음으로 0으로 초기화하고 다시 받아줍니다.
 	dessert_sell = 0;
 
 	// 메뉴를 전부 돌면서 정해진 
 	for(int i = 0; i < menu_price.size(); i++){
-		SupplyDemand(i);
+		SupplyDemand(i, check_veblen);
 	}
 	
 	// 커피의 모든 판매량의 절반만큼 판매되어 저장합니다.
-	dessert_total_sell += 5000 * dessert_sell;
+	if(check_dessert_make){
+		dessert_total_sell += 5000 * dessert_sell;
+	}
 }
 
-void Menu::SupplyDemand(int i){
+// 특정 단어가 문자열에 포함되어 있는지 확인하는 함수
+bool Menu::containsWord(const string& targetWord,const string& Word) {
+    istringstream stream(Word);
+    string word;
+
+    while (stream >> word) {
+        if (word == targetWord) {
+            return true;
+        }
+    }
+	// 만일 단어가 포함되어져 있지 않다면 false를 반환합니다.
+    return false;
+}
+
+// 균형지점을 지정해주는 함수 입니다.
+void Menu::SupplyDemand(int i, bool& check){
 	int price, demand, supply;
+
 	// 3개의 균형지점 중에 랜덤으로 결정하여 줍니다.
 	if(supply_demand_num[i] == 1){
 		price = menu_price[i] / 100; 
 		demand = 100 - price;
-		supply = 10 + 2 * price;
+		supply = 3 * price;
 	}
 	else if(supply_demand_num[i] == 2){
 		price = menu_price[i] / 100; 
 		demand = 150 - price;
-		supply = 30 + 2 * price;
+		supply = 1.5 * price;
 	}
 	else{
 		price = menu_price[i] / 100; 
 		demand = 80 - price;
-		supply = 20 + price;
+		supply = price;
 	}
 	
 	// 수요와 공급 중에서 작은 값을 판매량으로 결정합니다.
 	int insert = min(demand, supply);
 	
 	// 몇개가 판매되는지 판매량을 넣습니다.
-	menu_sell[i] = insert;
-
+	// veblen이 포함 시에 판매량이 늘어납니다.
+	// check를 통해 veblen은 한번만 적용 가능하도록 합니다.
+	if(containsWord(veblen, menu_name[i]) && check){
+		menu_sell[i] = insert + 30;
+		check = false;
+	}
+	else{
+		menu_sell[i] = insert;
+	}
+		
 	// 디저트의 판매량은 커피의 절반만큼 팔립니다.
-	dessert_sell += menu_sell[i] / 2;
+	if(check_dessert_make){
+		dessert_sell += menu_sell[i] / 2;
+	}
 
 	// 판매된 총 가격을 입력합니다. (정산에서 이용됩니다.)
 	total_sell += menu_price[i] * menu_sell[i];
@@ -425,7 +572,7 @@ void Menu::Total(int total_staff){
 	cout << total_staff << endl;
 	cout << "\n";
 
-	// 커피 + 디저트 - 직원월급을 하여 보여줍니다.
+	// 커피 + 디저트 - 직원월급, 즉 총 이윤을 보여줍니다.
 	cout << "===| 정산 |===" << endl;
 	cout << total_sell + dessert_total_sell - total_staff << endl;
 }
@@ -509,12 +656,34 @@ public:
 	int total_staff = 0;
 
 	void run();
+	void ending();
 };
+
+void Run::ending(){
+	cout << "부족한 게임을 플레이해주셔서 감사합니다." << endl;
+	cout << endl;
+	cout << "해당 게임은 수요공급곡선, 베블런 효과, 외부 효과를 재미있게 알려주기 위해" <<endl;
+	cout << "제작되었습니다." << endl;
+	cout << "가격이 일정 이상 올라가게 되면 판매량이 줄어들거나, 가격을 많이 내리면 판매량이 줄어들었을 겁니다." << endl;
+	cout << "이는 가격이 줄어들면 공급자가 공급을 하지 않게 되고," << endl;
+	cout << "반대로 가격을 올리면 소비자가 구매하지 않는 효과를 보여줍니다. 비싸면 사기 싫잖아요..." << endl;
+	cout << "그렇지만 비싸도 오히려 잘팔리는 경우도 있습니다. 이를 베블런 효과라고 합니다." << endl;
+	cout << "신문에 나오는 단어를 사용하면 디저트를 더 비싸게 팔 수도 있었습니다." << endl;
+	cout << "예능에서 맛있어 보이는 음식이 나오면 먹고싶어져 비싸도 사먹곤 합니다." << endl;
+	cout << "이를 외부 효과라고 합니다." << endl;
+	cout << "요즘 3줄이상 안 읽는 경우가 많은데 말이 길었네요.." << endl;
+	cout << "부족한 저의 게임을 플레이 해주셔서 감사합니다." << endl;
+}
 
 // 전체적인 행동 요소를 나타내는 함수 입니다. 
 void Run::run(){
 	srand(static_cast<unsigned int>(time(nullptr)));
     int r = rand() % 10; // 인덱스는 0~9 범위
+	// keyword를 받아옴
+
+	string key_word = event.ReturnKeyword(r);
+	// 디저트의 가격을 초기화 시킵니다.
+	menu.ResetDessertPrice();
 
 	int menu_select;
 	
@@ -557,7 +726,7 @@ void Run::run(){
 						break;
 					case 2:
 						// 참조한 Menu클래스의 함수 make_dessert함수를 불러옵니다. 
-						menu.MakeDessert(); 
+						menu.MakeDessert(key_word); 
 						break;
 					case 3:
 						// 참조한 Menu클래스의 show_menu 함수를 불러옵니다. 
@@ -568,6 +737,7 @@ void Run::run(){
 						event.ShowNewspaper(r);
 						break;
 					case 5:
+						//미니게임을 실행합니다.
 						event.MiniGame(r);
 						break;
 					case 6:
@@ -645,6 +815,8 @@ void Run::run(){
 		}
 		cout << endl;
 	}
+
+	ending();
 }
 
 int main(){
