@@ -1,4 +1,3 @@
-#ifndef USER_H
 #define USER_H
 
 #include <iostream>
@@ -125,4 +124,3 @@ public:
 
 void Hire(Employee& hire);
 
-#endif // USER_H
